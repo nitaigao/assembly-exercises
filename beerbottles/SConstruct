@@ -3,4 +3,4 @@ env = Environment(ENV = os.environ)
 env['AS'] = 'nasm'
 env['ASFLAGS'] = '-f macho -g -F null'
 env['CC'] = 'ld -e _start'
-env.Program('beerbottles', 'beerbottles.asm')
+env.Program('beerbottles.out', 'beerbottles.asm')
