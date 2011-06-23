@@ -1,7 +1,7 @@
 import os
 env = Environment(ENV = os.environ)
 env['AS'] = 'nasm'
-env['ASFLAGS'] = '-f elf'
+env['ASFLAGS'] = '-f elf -g -F stabs'
 env['LD'] = 'ld'
 env['CC'] = 'ld'
 env.Program('beerbottles', 'beerbottles.asm')
