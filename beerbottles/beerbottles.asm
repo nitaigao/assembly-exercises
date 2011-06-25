@@ -48,12 +48,34 @@ _tostringloop:
   jne   _tostringloop     ; if yes then loop
     
   ; reverse the string
+      
+  mov   ecx, 0            ; set the loop count to 0  
+  mov   edx, esi          ; set the string length
+  dec   edx               ; decrement the topmost half to a usable index
+
+_loopreverse:
+
+
+  mov   edi, [VERSE+ecx]  ; temp store the value on side a   
+  mov   eax, [VERSE+edx]  ; temp store the value on side b
+  mov   [VERSE+ecx], eax  ; set a to b
+  mov   [VERSE+edx], edi  ; set b to a
     
-  mov   eax, [VERSE]
-  mov   ebx, [VERSE+1]
-  mov   [VERSE], ebx
-  mov   [VERSE+1], eax
-    
+  inc   ecx               ; increment the bottom half to a new index
+  
+  cmp   ecx, edx
+  jne    _finishreverse
+  
+  dec   edx               ; decrement to topmost half to a new index
+  
+  mov   eax,  edx         ; take the topmostindex
+  mov   ebx,  02h         ; set the divisor to 2
+  div   ebx               ; divide
+  
+  cmp   ecx, eax          ; compare half of the top index to the bottom index
+  jl    _loopreverse      ; if less than the bottom half index then loop
+  
+_finishreverse:
   ret
 
 _start:
