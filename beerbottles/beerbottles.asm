@@ -1,6 +1,6 @@
 section .data
 
-  BOTTLES     equ 1000
+  BOTTLES     equ 100000
   
   VERSE1A      db " bottles of beer on the wall, "
   VERSE1ALEN   equ $-VERSE1A
@@ -26,27 +26,23 @@ section .text
 
   global _start
   
-_syscall:		
-  int	0x80		;system call
-  ret
-  
-  ; reverse a character array
+; reverse a character array
   
 _reversestring:
-  mov   ecx, 0            ; set the loop count to 0 
+  mov   ebx, 0            ; set the loop count to 0 
   mov   edx, esi          ; set the string length 
   
   dec 	edx
 _loopreverse:
-  mov   edi, [VERSE+ecx]  ; temp store the value on side a    
+  mov   edi, [VERSE+ebx]  ; temp store the value on side a    
   mov   eax, [VERSE+edx]  ; temp store the value on side b
-  mov   [VERSE+ecx], eax  ; set a to b
-	mov   [VERSE+edx], edi  ; set b to a
+  mov   [VERSE+ebx], al  ; set a to b
+	mov   [VERSE+edx], di  ; set b to a
 
-	inc		ecx
+	inc		ebx
 	dec		edx
   
-  cmp   edx, ecx           ; compare bottom index with half of top index
+  cmp   edx, ebx           ; compare bottom index with half of top index
   jg    _loopreverse      ; if the top half is greater than the bettom then jump
 
 _finishreverse:
@@ -155,6 +151,6 @@ _printverse:
   jne   _printverse
   
   
-  push  dword 0
   mov   eax, 1
-  call _syscall
+  mov		ebx, 0
+	int 80h
