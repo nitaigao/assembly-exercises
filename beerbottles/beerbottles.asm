@@ -11,6 +11,9 @@ section .data
   VERSE2A       db "Take one down and pass it around, "
   VERSE2ALEN    equ $-VERSE2A
 
+  VERSE2B       db " bottles of beer on the wall.", 10
+  VERSE2BLEN    equ $-VERSE2B
+
 section .bss
   
   VERSELEN   equ   0
@@ -27,9 +30,11 @@ _syscall:
   int	0x80		;system call
   ret
   
+; convert a number to a character array
+  
 _tostring:
-  mov   esi, 0
-_loop:
+  mov   esi, 0            ; reset esi to hold the length of the char array
+_tostringloop:
   mov   ebx, 0Ah          ; we will divide by 10
   mov   edx, 0            ; reset the carry register
   div   ebx               ; do the division
@@ -40,75 +45,117 @@ _loop:
   inc   esi               ; increment the offset
 
   cmp   eax, 0            ; see if there are any more numbers to process
-  jne   _loop             ; if yes then loop
-  mov   ebx, 0
-  mov   ecx, 0
-  mov   edx, 0
+  jne   _tostringloop     ; if yes then loop
+    
+  ; reverse the string
+    
+  mov   eax, [VERSE]
+  mov   ebx, [VERSE+1]
+  mov   [VERSE], ebx
+  mov   [VERSE+1], eax
     
   ret
 
 _start:
   nop
         
-  mov   eax, BOTTLES
-  dec   eax
-  push  eax
-  call  _tostring
-  
-  push  dword esi
-  push  dword VERSE
-  push  dword 1
-  mov   eax, 0x4
-  call  _syscall
-  pop   eax
-  pop   eax
-  pop   eax
-  
-  push  dword VERSE1ALEN
-  push  dword VERSE1A
-  push  dword 1
-  mov   eax, 0x4
-  call  _syscall
-  pop   eax
-  pop   eax
-  pop   eax
-  
-  push  dword esi
-  push  dword VERSE
-  push  dword 1
-  mov   eax, 0x4
-  call  _syscall
-  pop   eax
-  pop   eax
-  pop   eax
+  mov   eax, BOTTLES      ; copy the number of bottles for processing
+    
+  dec   eax               ; decremend the number of bottles
 
-  push  dword VERSE1BLEN
-  push  dword VERSE1B
-  push  dword 1
-  mov   eax, 0x4
-  call  _syscall
-  pop   eax
+_printverse:
+  push  eax               ; store the number of bottles for later processing
+  call  _tostring         ; stringify the number of bottles
+  
+  ; print the number of bottles
+  
+  push  dword esi         ; push the string length
+  push  dword VERSE       ; push the string to print  
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
   pop   eax
   pop   eax
   
-  push  dword VERSE2ALEN
-  push  dword VERSE2A
-  push  dword 1
-  mov   eax, 0x4
-  call  _syscall
-  pop   eax
+  ; print the first part of the verse 1
+  
+  push  dword VERSE1ALEN  ; push the string length
+  push  dword VERSE1A     ; push the string to print
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
   pop   eax
   pop   eax
   
+  ; print the number of bottles
+  
+  push  dword esi         ; push the string length
+  push  dword VERSE       ; push the string to print
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
   pop   eax
-  dec   eax
-  call  _tostring
+  pop   eax
+  
+  ; print the second part of the verse 1
+
+  push  dword VERSE1BLEN  ; push the string length
+  push  dword VERSE1B     ; push the string to print
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
+  pop   eax
+  pop   eax
+  
+  ; print the first part of the verse 2
+  
+  push  dword VERSE2ALEN  ; push the string length
+  push  dword VERSE2A     ; push the string to print
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
+  pop   eax
+  pop   eax
+  
+  ; decrement the number of bottles for the last part of the verse
+  
+  pop   eax               ; retrieve the bottle count from the stack
+  dec   eax               ; decrement the bottle count
+  push  eax               ; store the bottle count again
+  call  _tostring         ; stringify the bottle count
+  
+  ; print the number of bottles
   
   push  dword esi
   push  dword VERSE
-  push  dword 1
-  mov   eax, 0x4
-  call _syscall
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
+  pop   eax
+  pop   eax
+  
+  ; print the second part of the verse 2
+
+  push  dword VERSE2BLEN  ; push the string length
+  push  dword VERSE2B     ; push the string to print
+  push  dword 1           ; set to stdout 
+  mov   eax, 0x4          ; prime a sys_write call
+  call  _syscall          ; call the os to perform the print
+  pop   eax               ; cleanup the stack
+  pop   eax
+  pop   eax
+  
+  pop   eax
+  
+  cmp   eax, 0
+  jne   _printverse
+  
   
   push  dword 0
   mov   eax, 1
