@@ -44,8 +44,6 @@ _loopreverse:
   
   cmp   edx, ebx           ; compare bottom index with half of top index
   jg    _loopreverse      ; if the top half is greater than the bettom then jump
-
-_finishreverse:
   ret
   
 ; convert a number to a character array
@@ -85,7 +83,7 @@ _printverse:
   mov 	ebx, 1						; to stdout  
   mov 	ecx, VERSE        ; set to stdout 
   mov 	edx, esi          ; prime a sys_write call
-  int	80h          				; call the os to perform the print
+  int	  80h        				; call the os to perform the print
   
   ; print the first part of the verse 1
   
@@ -93,7 +91,7 @@ _printverse:
   mov 	ebx, 1								; to stdout  
   mov  	ecx, dword VERSE1A    ; push the string to print
   mov  	edx, dword VERSE1ALEN ; push the string length
-  int	80h          						; call the os to perform the print
+  int	  80h        						; call the os to perform the print
   
   
   ; print the number of bottles
@@ -102,7 +100,7 @@ _printverse:
   mov 	ebx, 1						; to stdout  
   mov  	ecx, dword VERSE  ; push the string to print
   mov  	edx, dword esi    ; push the string length
-  int	80h          				; call the os to perform the print
+  int	  80h        				; call the os to perform the print
   
   
   ; print the second part of the verse 1
@@ -111,7 +109,7 @@ _printverse:
   mov 	ebx, 1								; to stdout  
 	mov  	ecx, dword VERSE1B    ; push the string to print
   mov  	edx, dword VERSE1BLEN ; push the string length
-  int	80h          						; call the os to perform the print
+  int	  80h        						; call the os to perform the print
   
   
   ; print the first part of the verse 2
@@ -120,7 +118,7 @@ _printverse:
   mov 	ebx, 1								; to stdout  
   mov  	ecx, dword VERSE2A    ; push the string to print
   mov  	edx, dword VERSE2ALEN ; push the string length
-  int	80h          						; call the os to perform the print
+  int	  80h        						; call the os to perform the print
   
   ; decrement the number of bottles for the last part of the verse
   
@@ -135,7 +133,7 @@ _printverse:
   mov 	ebx, 1						; to stdout  
   mov  	ecx, dword VERSE
   mov  	edx, dword esi
-  int	80h          				; call the os to perform the print
+  int	  80h        				; call the os to perform the print
   
   ; print the second part of the verse 2
 
@@ -143,14 +141,15 @@ _printverse:
   mov 	ebx, 1								; to stdout  
   mov  	ecx, dword VERSE2B    ; push the string to print
   mov  	edx, dword VERSE2BLEN ; push the string length
-	int 80h
+	int   80h
 	
   pop   eax
   
   cmp   eax, 0
   jne   _printverse
   
+  ; exit
   
   mov   eax, 1
   mov		ebx, 0
-	int 80h
+	int   80h
