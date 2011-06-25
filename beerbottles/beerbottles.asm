@@ -1,6 +1,6 @@
 section .data
 
-  BOTTLES     equ 100
+  BOTTLES     equ 1000
   
   VERSE1A      db " bottles of beer on the wall, "
   VERSE1ALEN   equ $-VERSE1A
@@ -30,59 +30,61 @@ _syscall:
   int	0x80		;system call
   ret
   
+  ; reverse a character array
+  
+_reversestring:
+  mov   ecx, 0            ; set the loop count to 0 (i=0)
+  mov   edx, esi          ; set the string length (j=len)
+  dec   edx               ; decrement the topmost half to a usable index(j--)
+
+_loopreverse:
+  mov   edi, [VERSE+ecx]  ; temp store the value on side a    
+  mov   eax, [VERSE+edx]  ; temp store the value on side b
+  mov   [VERSE+ecx], eax  ; set a to b
+  mov   [VERSE+edx], edi  ; set b to a
+
+  dec   edx               ; decrement to topmost half to a new index(j--)
+
+  ; i < (j / 2)
+  ; j / 2
+  mov   eax,  edx         ; take the topmostindex
+  mov   ebx,  02h         ; set the divisor to 2
+  div   ebx               ; divide
+
+  ; result = eax
+  ; i < result
+  cmp   ecx, eax          ; compare bottom index with half of top index
+  inc   ecx               ; increment the bottom half to a new index (i++)
+  jl    _loopreverse      ; if bottom index is less than half of top then jump
+
+_finishreverse:
+  ret
+  
 ; convert a number to a character array
   
 _tostring:
   mov   esi, 0            ; reset esi to hold the length of the char array
+
 _tostringloop:
   mov   ebx, 0Ah          ; we will divide by 10
   mov   edx, 0            ; reset the carry register
   div   ebx               ; do the division
 
-  add   edx, 30h          ; take the result and add 48 to it (giving the ascii code) 
+  add   edx, 030h         ; take the result and add 48 to it (giving the ascii code) 
 
   mov   [VERSE+esi], edx  ; set the buffer offset to the ascii value
   inc   esi               ; increment the offset
 
-  cmp   eax, 0            ; see if there are any more numbers to process
+  cmp   eax, 0h            ; see if there are any more numbers to process
   jne   _tostringloop     ; if yes then loop
-    
-  ; reverse the string
-      
-  mov   ecx, 0            ; set the loop count to 0  
-  mov   edx, esi          ; set the string length
-  dec   edx               ; decrement the topmost half to a usable index
-
-_loopreverse:
-
-
-  mov   edi, [VERSE+ecx]  ; temp store the value on side a   
-  mov   eax, [VERSE+edx]  ; temp store the value on side b
-  mov   [VERSE+ecx], eax  ; set a to b
-  mov   [VERSE+edx], edi  ; set b to a
-    
-  inc   ecx               ; increment the bottom half to a new index
   
-  cmp   ecx, edx
-  jne    _finishreverse
-  
-  dec   edx               ; decrement to topmost half to a new index
-  
-  mov   eax,  edx         ; take the topmostindex
-  mov   ebx,  02h         ; set the divisor to 2
-  div   ebx               ; divide
-  
-  cmp   ecx, eax          ; compare half of the top index to the bottom index
-  jl    _loopreverse      ; if less than the bottom half index then loop
-  
-_finishreverse:
+  call _reversestring
   ret
-
+    
 _start:
   nop
         
   mov   eax, BOTTLES      ; copy the number of bottles for processing
-    
   dec   eax               ; decremend the number of bottles
 
 _printverse:
