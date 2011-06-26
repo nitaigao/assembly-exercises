@@ -1,0 +1,1 @@
+scons -Q && ./forum_details.out
