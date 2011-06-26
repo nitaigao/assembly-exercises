@@ -9,8 +9,12 @@ section .data
   ; The prompt should be logical.
   ; Most importantly, it must not crash, segfault, lockup, or enter an infinite loop no matter what is entered
 
-  FIRSTQ db "Whats your name?: "
-  FIRSTQLEN equ $-FIRSTQ
+  NAMEQ db "Whats your name?: "
+  NAMEQLEN equ $-NAMEQ
+
+  AGEQ db "How old are you?: "
+  AGEQLEN equ $-AGEQ
+
 
 section .bss
 
@@ -25,17 +29,17 @@ _start:
 
   nop
 
-_askfirstq:
+_asknameq:
 
-  ; Ask the first question
+  ; Ask the name question
 
   mov   eax, 4            ; sys_write
   mov   ebx, 1            ; stdout
-  mov   ecx, FIRSTQ       ; text
-  mov   edx, FIRSTQLEN    ; length
+  mov   ecx, NAMEQ        ; text
+  mov   edx, NAMEQLEN     ; length
   int   80h
 
-  ; Get the response to the first question
+  ; Get the response to the name question
 
   mov   eax, 3            ; sys_read
   mov   ebx, 0            ; stdin
@@ -44,20 +48,66 @@ _askfirstq:
   int   80h
   
   cmp   eax, 1            ; just contains a character return            
-  je    _askfirstq
+  je    _asknameq
 
   mov   esi, [INPUTBUFF]
   cmp   esi, 0A20h  ; the first character cant be a space
-  je    _askfirstq
+  je    _asknameq
   
-    
+_askageq:
 
+  ; Ask the age question
 
-  mov   eax, 4
-  mov   ebx, 1
-  mov   ecx, INPUTBUFF
-  mov   edx, esi
+  mov   eax, 4            ; sys_write
+  mov   ebx, 1            ; stdout
+  mov   ecx, AGEQ        ; text
+  mov   edx, AGEQLEN      ; length
   int   80h
+    
+  ; Get the response to the age question
+
+  mov   eax, 3            ; sys_read
+  mov   ebx, 0            ; stdin
+  mov   ecx, INPUTBUFF    ; buffer to read in
+  mov   edx, INPUTBUFFLEN ; length of the buffer to read
+  int   80h
+  mov   esi, eax          ; store the length of the response
+
+  cmp   esi, 1            ; just contains a character return            
+  je    _askageq 
+
+
+;   Check the string is a number
+
+  xor   eax, eax          ; zero eax
+  xor   ebx, ebx          ; zero ebx
+  xor   ecx, ecx          ; zero ecx
+
+; check of the very first character is 0 or less
+
+  mov   ebx, [INPUTBUFF + ecx]  ; get the character
+  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
+
+  cmp   bl, 01h                ; if its less than 1 then loop
+  jl    _askageq
+
+_anchkage:                ; check that the age is infact a number
+
+  mov   ebx, [INPUTBUFF + ecx]  ; get the character
+  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
+
+  cmp   bl, 09h                 ; if its greater than 9 then loop
+  jg    _askageq 
+
+  mov   edx, esi              ; copy the string length
+  dec   edx                   ; decrement it, so we chop of the cr
+  inc   ecx                   ; update the index of the character  
+  cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
+  jl    _anchkage             ; loop if we have more characters to process
+  
+
+
+
 
   mov   eax, 1
   mov   ebx, 0
