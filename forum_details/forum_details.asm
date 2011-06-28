@@ -15,6 +15,8 @@ section .data
   AGEQ db "How old are you?: "
   AGEQLEN equ $-AGEQ
 
+  FORUMIDQ db "What is your user id?: "
+  FORUMIDQLEN equ $-FORUMIDQ
 
 section .bss
 
@@ -105,8 +107,47 @@ _anchkage:                ; check that the age is infact a number
   cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
   jl    _anchkage             ; loop if we have more characters to process
   
+_askforumq:
 
+  ; Ask the user id question
 
+  mov   eax, 4            ; sys_write
+  mov   ebx, 1            ; stdout
+  mov   ecx, FORUMIDQ         ; text
+  mov   edx, FORUMIDQLEN      ; length
+  int   80h
+    
+  ; Get the response to the user id question
+
+  mov   eax, 3            ; sys_read
+  mov   ebx, 0            ; stdin
+  mov   ecx, INPUTBUFF    ; buffer to read in
+  mov   edx, INPUTBUFFLEN ; length of the buffer to read
+  int   80h
+  mov   esi, eax          ; store the length of the response
+
+  cmp   esi, 1            ; just contains a character return            
+  je    _askforumq
+
+;   Check the string is a number
+
+  xor   eax, eax          ; zero eax
+  xor   ebx, ebx          ; zero ebx
+  xor   ecx, ecx          ; zero ecx
+
+; check of the very first character is 0 or less
+
+  mov   ebx, [INPUTBUFF + ecx]  ; get the character
+  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
+
+  cmp   bl, 01h                ; if its less than 1 then loop
+  jl    _askforumq
+
+  mov   ebx, [INPUTBUFF + ecx]  ; get the character
+  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
+
+  cmp   bl, 09h                 ; if its greater than 9 then loop
+  jg    _askforumq
 
 
   mov   eax, 1
