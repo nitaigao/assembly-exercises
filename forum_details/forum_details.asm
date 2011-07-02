@@ -18,10 +18,18 @@ section .data
   FORUMIDQ db "What is your user id?: "
   FORUMIDQLEN equ $-FORUMIDQ
 
+  STATEMENT1 db "You are "
+  STATEMENT1LEN equ $-STATEMENT1
+
+  NAMELEN equ 0
+
 section .bss
 
   INPUTBUFFLEN  equ 1024
   INPUTBUFF:    resb INPUTBUFFLEN
+
+  NAMEBUFFLEN  equ 1024
+  NAMEBUFF:    resb INPUTBUFFLEN
 
 section .text
 
@@ -45,14 +53,18 @@ _asknameq:
 
   mov   eax, 3            ; sys_read
   mov   ebx, 0            ; stdin
-  mov   ecx, INPUTBUFF    ; buffer to read in
-  mov   edx, INPUTBUFFLEN ; length of the buffer to read
+  mov   ecx, NAMEBUFF    ; buffer to read in
+  mov   edx, NAMEBUFFLEN ; length of the buffer to read
   int   80h
+
+  mov   esi, eax          ; copy the length of the raw string
+  dec   esi               ; strip the carriage return
+  push  esi               ; store the new length for later
   
   cmp   eax, 1            ; just contains a character return            
   je    _asknameq
 
-  mov   esi, [INPUTBUFF]
+  mov   esi, [NAMEBUFF]
   cmp   esi, 0A20h  ; the first character cant be a space
   je    _asknameq
   
@@ -106,6 +118,10 @@ _anchkage:                ; check that the age is infact a number
   inc   ecx                   ; update the index of the character  
   cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
   jl    _anchkage             ; loop if we have more characters to process
+
+; store the age for later
+;  mov   ebx, [INPUTBUFF + ecx]  ; get the character
+;  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
   
 _askforumq:
 
@@ -149,6 +165,22 @@ _askforumq:
   cmp   bl, 09h                 ; if its greater than 9 then loop
   jg    _askforumq
 
+;You are LaRoza, aged 20 next year you will be 21, with user id 266234, the next user is 266235.
+
+; confirm everything
+
+  mov   eax, 4                ; sys_write
+  mov   ebx, 1                ; stdout
+  mov   ecx, STATEMENT1         ; text
+  mov   edx, STATEMENT1LEN      ; length
+  int   80h
+
+  pop   esi                   ; retrieve the name length
+  mov   eax, 4                ; sys_write
+  mov   ebx, 1                ; stdout    
+  mov   ecx, NAMEBUFF         ; text
+  mov   edx, esi    ; length
+  int   80h
 
   mov   eax, 1
   mov   ebx, 0
