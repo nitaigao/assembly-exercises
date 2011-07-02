@@ -123,9 +123,10 @@ _anchkage:                   ; check that the age is infact a number
 ; convert age to an integer
 
 
-
-;on the first number, store it loop
-;on every other number, multiple the stored number by 10, add the number to it and then store it
+; 123
+; first: 1
+; second: (1*10)+2
+; third: (12*10)+3
 
   xor   eax, eax          ; zero eax
   xor   ebx, ebx          ; zero ebx
@@ -139,24 +140,20 @@ _string2intloop:
   dec   edx                   ; decrement it, so we chop of the cr
   inc   ecx                   ; update the index of the character  
 
-  cmp   ecx, 1
-  je    _string2intadd       ; if we are on the first loop then 
+  cmp   ecx, 1                
+  je    _string2intadd        ; if we are on the first loop then dont do the multiply 
   
-  mov   eax, edi
-  mov   edx, 0Ah
-  mul   edx
-  mov   edi, eax
+  mov   eax, edi              ; move total into eax ready for multiply by 10
+  mov   edx, 0Ah              ; move 1o into edx
+  mul   edx                   ; perform val*10
+  mov   edi, eax              ; save the result into edx
 
 _string2intadd:
-  add   edi, ebx
+  add   edi, ebx              ; perform the addition
 
   cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
   jl    _string2intloop       ; loop if we have more characters to process
    
-
-; store the age for later
-;  mov   ebx, [INPUTBUFF + ecx]  ; get the character
-;  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
   
 _askforumq:
 
