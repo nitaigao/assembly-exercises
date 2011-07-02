@@ -105,7 +105,7 @@ _askageq:
   cmp   bl, 01h                ; if its less than 1 then loop
   jl    _askageq
 
-_anchkage:                ; check that the age is infact a number
+_anchkage:                   ; check that the age is infact a number
 
   mov   ebx, [INPUTBUFF + ecx]  ; get the character
   sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
@@ -118,6 +118,41 @@ _anchkage:                ; check that the age is infact a number
   inc   ecx                   ; update the index of the character  
   cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
   jl    _anchkage             ; loop if we have more characters to process
+
+
+; convert age to an integer
+
+
+
+;on the first number, store it loop
+;on every other number, multiple the stored number by 10, add the number to it and then store it
+
+  xor   eax, eax          ; zero eax
+  xor   ebx, ebx          ; zero ebx
+  xor   ecx, ecx          ; zero ecx
+
+_string2intloop:
+  mov   ebx, [INPUTBUFF + ecx]  ; fetch the character
+  sub   ebx, 030h               ; subtract 48 from it (makes it an integer value)
+   
+  mov   edx, esi              ; copy the string length
+  dec   edx                   ; decrement it, so we chop of the cr
+  inc   ecx                   ; update the index of the character  
+
+  cmp   ecx, 1
+  je    _string2intadd       ; if we are on the first loop then 
+  
+  mov   eax, edi
+  mov   edx, 0Ah
+  mul   edx
+  mov   edi, eax
+
+_string2intadd:
+  add   edi, ebx
+
+  cmp   ecx, edx              ; compare the index with the length of the string (minus the cr)
+  jl    _string2intloop       ; loop if we have more characters to process
+   
 
 ; store the age for later
 ;  mov   ebx, [INPUTBUFF + ecx]  ; get the character
